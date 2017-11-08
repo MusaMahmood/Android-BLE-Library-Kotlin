@@ -628,9 +628,12 @@ class DeviceControlActivity : Activity(), ActBle.ActBleListener {
         Log.i(TAG, "onCharacteristicRead")
         if (status == BluetoothGatt.GATT_SUCCESS) {
             if (AppConstant.CHAR_BATTERY_LEVEL == characteristic.uuid) {
-                val batteryLevel = characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT16, 0)!!
-                updateBatteryStatus(batteryLevel)
-                Log.i(TAG, "Battery Level :: " + batteryLevel)
+                if(characteristic.value!=null) {
+//                    val batteryLevel = characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT16, 0)
+                    val batteryLevel = characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT8, 0)
+                    updateBatteryStatus(batteryLevel)
+                    Log.i(TAG, "Battery Level :: " + batteryLevel)
+                }
             }
         } else {
             Log.e(TAG, "onCharacteristic Read Error" + status)
@@ -644,7 +647,7 @@ class DeviceControlActivity : Activity(), ActBle.ActBleListener {
         }
 
         if (AppConstant.CHAR_BATTERY_LEVEL == characteristic.uuid) {
-            val batteryLevel = characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT16, 0)!!
+            val batteryLevel = characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT8, 0)!!
             updateBatteryStatus(batteryLevel)
         }
 
@@ -690,8 +693,6 @@ class DeviceControlActivity : Activity(), ActBle.ActBleListener {
             }
             val powerSpectrumThreadTask = Thread(mPowerSpectrumRunnableThread)
             powerSpectrumThreadTask.start()
-//            val powerSpectrumAsyncTask = PowerSpectrumAsyncTask()
-//            powerSpectrumAsyncTask.executeOnExecutor(THREAD_POOL_EXECUTOR)
         }
 
         runOnUiThread {
@@ -750,18 +751,6 @@ class DeviceControlActivity : Activity(), ActBle.ActBleListener {
         runPowerSpectrum()
         powerSpectrumUpdateUI()
     }
-
-//    private class PowerSpectrumAsyncTask : AsyncTask<Void, Void, Void>() {
-//        override fun doInBackground(vararg voids: Void): Void? {
-//            runPowerSpectrum()
-//            return null
-//        }
-//
-//        override fun onPostExecute(aVoid: Void) {
-//            super.onPostExecute(aVoid)
-//            powerSpectrumUpdateUI()
-//        }
-//    }
 
     private fun updateTrainingRoutine(dataPoints: Int) {
         if (dataPoints % mSampleRate == 0 && mRunTrainingBool) {
