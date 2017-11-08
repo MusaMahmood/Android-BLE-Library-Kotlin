@@ -24,10 +24,11 @@ public class ActBleCharacteristic {
     }
 
     public ActBleCharacteristic(int requestCode, BluetoothGatt bluetoothGatt,
-                                BluetoothGattDescriptor bluetoothGattDescriptor) {
+                                BluetoothGattDescriptor bluetoothGattDescriptor, BluetoothGattCharacteristic bluetoothGattCharacteristic) {
         this.bluetoothGatt = bluetoothGatt;
         this.requestCode = requestCode;
         this.bluetoothGattDescriptor = bluetoothGattDescriptor;
+        this.bluetoothGattCharacteristic = bluetoothGattCharacteristic;
     }
 
     public int getRequestCode() {

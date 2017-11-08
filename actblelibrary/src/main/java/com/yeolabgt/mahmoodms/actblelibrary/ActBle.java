@@ -12,6 +12,7 @@ import android.content.pm.PackageManager;
 import android.util.Log;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -37,7 +38,7 @@ public class ActBle {
         mActBleListener = actBleListener;
         this.mContext = context;
         this.mBluetoothManager = bluetoothManager;
-        actBleProcessQueue.run();
+//        actBleProcessQueue.run();
     }
 
     private BluetoothGattCallback mBleGattCallback = new BluetoothGattCallback() {
@@ -73,6 +74,16 @@ public class ActBle {
 
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
+            for (ActBleCharacteristic actBleCharacteristic: ActBleProcessQueue.getActBleCharacteristicList()) {
+                if(characteristic.getUuid()
+                        .equals(actBleCharacteristic.getBluetoothGattCharacteristic().getUuid())) {
+                    ActBleProcessQueue.removeCharacteristicRequest(actBleCharacteristic); // Remove
+                }
+                if(ActBleProcessQueue.getActBleCharacteristicListSize()>0) {
+                    // Run next if available:
+                    runProcess();
+                }
+            }
             mActBleListener.onCharacteristicChanged(gatt, characteristic);
         }
 
@@ -127,8 +138,13 @@ public class ActBle {
         }
     };
 
-
     // BLE Operations:
+    public void runProcess() {
+        final ExecutorService executorService = Executors.newSingleThreadExecutor();
+        final Future<Boolean> operationSuccess = executorService.submit(new ActBleProcessQueue.SequentialThread());
+        Log.d(TAG, "runProcess: operationSuccess:"+String.valueOf(operationSuccess));
+    }
+
     public void readCharacteristic(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
         ActBleCharacteristic actBleCharacteristic = new ActBleCharacteristic(ActBleProcessQueue.REQUEST_TYPE_READ_CHAR, gatt, characteristic);
         ActBleProcessQueue.addCharacteristicRequest(actBleCharacteristic);
@@ -166,7 +182,7 @@ public class ActBle {
         final BluetoothGattDescriptor clientConfig = characteristic.getDescriptor(CLIENT_CHARACTERISTIC_CONFIG);
         if(clientConfig==null) return;
         clientConfig.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
-        ActBleCharacteristic actBleCharacteristic = new ActBleCharacteristic(ActBleProcessQueue.REQUEST_TYPE_WRITE_DESCRIPTOR, gatt, clientConfig);
+        ActBleCharacteristic actBleCharacteristic = new ActBleCharacteristic(ActBleProcessQueue.REQUEST_TYPE_WRITE_DESCRIPTOR, gatt, clientConfig, characteristic);
         ActBleProcessQueue.addCharacteristicRequest(actBleCharacteristic);
     }
 
@@ -175,7 +191,7 @@ public class ActBle {
         final BluetoothGattDescriptor clientConfig = characteristic.getDescriptor(CLIENT_CHARACTERISTIC_CONFIG);
         if(clientConfig==null) return;
         clientConfig.setValue(BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE);
-        ActBleCharacteristic actBleCharacteristic = new ActBleCharacteristic(ActBleProcessQueue.REQUEST_TYPE_WRITE_DESCRIPTOR, gatt, clientConfig);
+        ActBleCharacteristic actBleCharacteristic = new ActBleCharacteristic(ActBleProcessQueue.REQUEST_TYPE_WRITE_DESCRIPTOR, gatt, clientConfig, characteristic);
         ActBleProcessQueue.addCharacteristicRequest(actBleCharacteristic);
     }
 
@@ -211,7 +227,6 @@ public class ActBle {
             bluetoothGatt.disconnect();
             bluetoothGatt.close();
             bluetoothGattHashMap.remove(bluetoothGatt.getDevice().getAddress());
-            actBleProcessQueue.interrupt();
         } catch (Exception e) {
             Log.e(TAG, "Exception: "+e.toString());
             mActBleListener.onError(e.toString());

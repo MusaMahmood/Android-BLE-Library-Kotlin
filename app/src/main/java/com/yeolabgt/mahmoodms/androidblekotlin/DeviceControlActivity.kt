@@ -41,9 +41,7 @@ import org.tensorflow.contrib.android.TensorFlowInferenceInterface
 import java.io.File
 import java.io.IOException
 import java.text.SimpleDateFormat
-import java.util.Arrays
-import java.util.Date
-import java.util.Locale
+import java.util.*
 
 /**
  * Created by mahmoodms on 5/31/2016.
@@ -592,8 +590,12 @@ class DeviceControlActivity : Activity(), ActBle.ActBleListener {
                 }
 
                 if (AppConstant.SERVICE_EEG_SIGNAL == service.uuid) {
-                    mActBle!!.setCharacteristicNotifications(gatt, service.getCharacteristic(AppConstant.CHAR_EEG_CH1_SIGNAL), true)
-                    mActBle!!.setCharacteristicNotifications(gatt, service.getCharacteristic(AppConstant.CHAR_EEG_CH2_SIGNAL), true)
+                    if (service.getCharacteristic(AppConstant.CHAR_EEG_CH1_SIGNAL) != null) {
+                        mActBle!!.setCharacteristicNotifications(gatt, service.getCharacteristic(AppConstant.CHAR_EEG_CH1_SIGNAL), true)
+                    }
+                    if (service.getCharacteristic(AppConstant.CHAR_EEG_CH2_SIGNAL) != null) {
+                        mActBle!!.setCharacteristicNotifications(gatt, service.getCharacteristic(AppConstant.CHAR_EEG_CH2_SIGNAL), true)
+                    }
                     if (service.getCharacteristic(AppConstant.CHAR_EEG_CH3_SIGNAL) != null) {
                         mActBle!!.setCharacteristicNotifications(gatt, service.getCharacteristic(AppConstant.CHAR_EEG_CH3_SIGNAL), true)
                     }
@@ -607,7 +609,8 @@ class DeviceControlActivity : Activity(), ActBle.ActBleListener {
                     mActBle!!.setCharacteristicNotifications(gatt, service.getCharacteristic(AppConstant.CHAR_BATTERY_LEVEL), true)
                 }
             }
-//            mActBle?.runProcess()
+            //Run process only once:
+            mActBle?.runProcess()
         }
     }
 
@@ -674,7 +677,6 @@ class DeviceControlActivity : Activity(), ActBle.ActBleListener {
             }
         }
         if (mCh1!!.chEnabled && mCh2!!.chEnabled) {
-            mActBle!!.actBleProcessQueue.setDelay(99) //change delay to 100ms.
             mNumber2ChPackets++
             mEEGConnectedAllChannels = true
             mCh1!!.chEnabled = false
