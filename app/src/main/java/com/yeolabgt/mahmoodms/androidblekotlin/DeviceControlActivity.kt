@@ -32,8 +32,9 @@ import android.widget.Toast
 import android.widget.ToggleButton
 
 import com.androidplot.util.Redrawer
-import com.beele.BluetoothLe
+//import com.beele.BluetoothLe
 import com.google.common.primitives.Floats
+import com.yeolabgt.mahmoodms.actblelibrary.ActBle
 
 import org.tensorflow.contrib.android.TensorFlowInferenceInterface
 
@@ -49,7 +50,7 @@ import java.util.Locale
  * Android Activity for Controlling Bluetooth LE Device Connectivity
  */
 
-class DeviceControlActivity : Activity(), BluetoothLe.BluetoothLeListener {
+class DeviceControlActivity : Activity(), ActBle.ActBleListener {
     // Graphing Variables:
     private var mGraphInitializedBoolean = false
     private var mGraphAdapterCh1: GraphAdapter? = null
@@ -58,7 +59,8 @@ class DeviceControlActivity : Activity(), BluetoothLe.BluetoothLeListener {
     //Device Information
     private var mBleInitializedBoolean = false
     private lateinit var mBluetoothGattArray: Array<BluetoothGatt?>
-    private var mBluetoothLe: BluetoothLe? = null
+    private var mActBle: ActBle? = null
+//    private var mBluetoothLe: BluetoothLe? = null
     private var mDeviceName: String? = null
     private var mDeviceAddress: String? = null
     private var mConnected: Boolean = false
@@ -324,8 +326,8 @@ class DeviceControlActivity : Activity(), BluetoothLe.BluetoothLeListener {
             Log.e(TAG, "No Devices Queued, Restart!")
             Toast.makeText(this, "No Devices Queued, Restart!", Toast.LENGTH_SHORT).show()
         }
-        mBluetoothLe = BluetoothLe(this, mBluetoothManager, this)
-        mBluetoothGattArray = Array(deviceMacAddresses!!.size, { i -> mBluetoothLe!!.connect(mBluetoothDeviceArray[i], false) })
+        mActBle = ActBle(this, mBluetoothManager, this)
+        mBluetoothGattArray = Array(deviceMacAddresses!!.size, {i -> mActBle!!.connect(mBluetoothDeviceArray[i], false) })
         for (i in mBluetoothDeviceArray.indices) {
             Log.e(TAG, "Connecting to Device: " + (mBluetoothDeviceArray[i]!!.name + " " + mBluetoothDeviceArray[i]!!.address))
             if ("WheelchairControl" == mBluetoothDeviceArray[i]!!.name) {
@@ -439,9 +441,9 @@ class DeviceControlActivity : Activity(), BluetoothLe.BluetoothLeListener {
     }
 
     private fun disconnectAllBLE() {
-        if (mBluetoothLe != null) {
+        if (mActBle != null) {
             for (bluetoothGatt in mBluetoothGattArray) {
-                mBluetoothLe!!.disconnect(bluetoothGatt!!)
+                mActBle!!.disconnect(bluetoothGatt!!)
                 mConnected = false
                 resetMenuBar()
             }
@@ -475,20 +477,20 @@ class DeviceControlActivity : Activity(), BluetoothLe.BluetoothLeListener {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.menu_connect -> {
-                if (mBluetoothLe != null) {
+                if (mActBle != null) {
                     initializeBluetoothArray()
                 }
                 connect()
                 return true
             }
             R.id.menu_disconnect -> {
-                if (mBluetoothLe != null) {
+                if (mActBle != null) {
                     disconnectAllBLE()
                 }
                 return true
             }
             android.R.id.home -> {
-                if (mBluetoothLe != null) {
+                if (mActBle != null) {
                     disconnectAllBLE()
                 }
                 NavUtils.navigateUpFromSameTask(this)
@@ -559,6 +561,14 @@ class DeviceControlActivity : Activity(), BluetoothLe.BluetoothLeListener {
         }
     }
 
+    override fun onMtuChanged(gatt: BluetoothGatt?, mtu: Int, status: Int) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun onReliableWriteCompleted(gatt: BluetoothGatt?, status: Int) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
     override fun onServicesDiscovered(gatt: BluetoothGatt, status: Int) {
         Log.i(TAG, "onServicesDiscovered")
         if (status == BluetoothGatt.GATT_SUCCESS) {
@@ -569,11 +579,11 @@ class DeviceControlActivity : Activity(), BluetoothLe.BluetoothLeListener {
                 if (AppConstant.SERVICE_DEVICE_INFO == service.uuid) {
                     //Read the device serial number (if available)
                     if(service.getCharacteristic(AppConstant.CHAR_SERIAL_NUMBER) != null) {
-                        mBluetoothLe!!.readCharacteristic(gatt, service.getCharacteristic(AppConstant.CHAR_SERIAL_NUMBER))
+                        mActBle!!.readCharacteristic(gatt, service.getCharacteristic(AppConstant.CHAR_SERIAL_NUMBER))
                     }
                     //Read the device software version (if available)
                     if(service.getCharacteristic(AppConstant.CHAR_SOFTWARE_REV) != null) {
-                        mBluetoothLe!!.readCharacteristic(gatt, service.getCharacteristic(AppConstant.CHAR_SOFTWARE_REV))
+                        mActBle!!.readCharacteristic(gatt, service.getCharacteristic(AppConstant.CHAR_SOFTWARE_REV))
                     }
                 }
                 if (AppConstant.SERVICE_WHEELCHAIR_CONTROL == service.uuid) {
@@ -582,21 +592,22 @@ class DeviceControlActivity : Activity(), BluetoothLe.BluetoothLeListener {
                 }
 
                 if (AppConstant.SERVICE_EEG_SIGNAL == service.uuid) {
-                    mBluetoothLe!!.setCharacteristicNotification(gatt, service.getCharacteristic(AppConstant.CHAR_EEG_CH1_SIGNAL), true)
-                    mBluetoothLe!!.setCharacteristicNotification(gatt, service.getCharacteristic(AppConstant.CHAR_EEG_CH2_SIGNAL), true)
+                    mActBle!!.setCharacteristicNotifications(gatt, service.getCharacteristic(AppConstant.CHAR_EEG_CH1_SIGNAL), true)
+                    mActBle!!.setCharacteristicNotifications(gatt, service.getCharacteristic(AppConstant.CHAR_EEG_CH2_SIGNAL), true)
                     if (service.getCharacteristic(AppConstant.CHAR_EEG_CH3_SIGNAL) != null) {
-                        mBluetoothLe!!.setCharacteristicNotification(gatt, service.getCharacteristic(AppConstant.CHAR_EEG_CH3_SIGNAL), true)
+                        mActBle!!.setCharacteristicNotifications(gatt, service.getCharacteristic(AppConstant.CHAR_EEG_CH3_SIGNAL), true)
                     }
                     if (service.getCharacteristic(AppConstant.CHAR_EEG_CH4_SIGNAL) != null) {
-                        mBluetoothLe!!.setCharacteristicNotification(gatt, service.getCharacteristic(AppConstant.CHAR_EEG_CH4_SIGNAL), true)
+                        mActBle!!.setCharacteristicNotifications(gatt, service.getCharacteristic(AppConstant.CHAR_EEG_CH4_SIGNAL), true)
                     }
                 }
 
                 if (AppConstant.SERVICE_BATTERY_LEVEL == service.uuid) { //Read the device battery percentage
-                    mBluetoothLe!!.readCharacteristic(gatt, service.getCharacteristic(AppConstant.CHAR_BATTERY_LEVEL))
-                    mBluetoothLe!!.setCharacteristicNotification(gatt, service.getCharacteristic(AppConstant.CHAR_BATTERY_LEVEL), true)
+                    mActBle!!.readCharacteristic(gatt, service.getCharacteristic(AppConstant.CHAR_BATTERY_LEVEL))
+                    mActBle!!.setCharacteristicNotifications(gatt, service.getCharacteristic(AppConstant.CHAR_BATTERY_LEVEL), true)
                 }
             }
+//            mActBle?.runProcess()
         }
     }
 
@@ -663,6 +674,7 @@ class DeviceControlActivity : Activity(), BluetoothLe.BluetoothLeListener {
             }
         }
         if (mCh1!!.chEnabled && mCh2!!.chEnabled) {
+            mActBle!!.actBleProcessQueue.setDelay(99) //change delay to 100ms.
             mNumber2ChPackets++
             mEEGConnectedAllChannels = true
             mCh1!!.chEnabled = false
@@ -828,7 +840,7 @@ class DeviceControlActivity : Activity(), BluetoothLe.BluetoothLeListener {
             }
         }
         if (mLedWheelchairControlService != null && mWheelchairControl) {
-            mBluetoothLe!!.writeCharacteristic(mBluetoothGattArray[mWheelchairGattIndex]!!, mLedWheelchairControlService!!.getCharacteristic(AppConstant.CHAR_WHEELCHAIR_CONTROL), bytes)
+            mActBle!!.writeCharacteristic(mBluetoothGattArray[mWheelchairGattIndex]!!, mLedWheelchairControlService!!.getCharacteristic(AppConstant.CHAR_WHEELCHAIR_CONTROL), bytes)
         }
     }
 
