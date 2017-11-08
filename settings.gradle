@@ -1,1 +1,1 @@
-include ':app', ':BeeLeLibrary', ':ActBleLibrary'
+include ':app', ':BeeLeLibrary'
