@@ -559,14 +559,6 @@ class DeviceControlActivity : Activity(), ActBle.ActBleListener {
         }
     }
 
-    override fun onMtuChanged(gatt: BluetoothGatt?, mtu: Int, status: Int) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun onReliableWriteCompleted(gatt: BluetoothGatt?, status: Int) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
     override fun onServicesDiscovered(gatt: BluetoothGatt, status: Int) {
         Log.i(TAG, "onServicesDiscovered")
         if (status == BluetoothGatt.GATT_SUCCESS) {
