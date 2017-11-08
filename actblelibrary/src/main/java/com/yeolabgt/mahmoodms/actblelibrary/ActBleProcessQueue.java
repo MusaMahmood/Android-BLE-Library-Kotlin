@@ -73,7 +73,6 @@ import java.util.concurrent.Callable;
                 success = false;
                 break;
         }
-        actBleCharacteristic.setOperationSuccess(success);
         return success;
     }
 
