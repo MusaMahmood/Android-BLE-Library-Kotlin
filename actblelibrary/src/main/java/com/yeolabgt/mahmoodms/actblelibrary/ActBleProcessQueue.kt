@@ -50,7 +50,7 @@ internal object ActBleProcessQueue {
             REQUEST_TYPE_READ_CHAR -> success = bluetoothGatt!!.readCharacteristic(actBleCharacteristic.bluetoothGattCharacteristic)
             REQUEST_TYPE_WRITE_CHAR -> {
                 success = bluetoothGatt!!.writeCharacteristic(actBleCharacteristic.bluetoothGattCharacteristic)
-                removeCharacteristicRequest(actBleCharacteristic)
+//                removeCharacteristicRequest(actBleCharacteristic)
             }
             REQUEST_TYPE_READ_DESCRIPTOR -> success = bluetoothGatt!!.readDescriptor(actBleCharacteristic.bluetoothGattDescriptor)
             REQUEST_TYPE_WRITE_DESCRIPTOR -> success = bluetoothGatt!!.writeDescriptor(actBleCharacteristic.bluetoothGattDescriptor)

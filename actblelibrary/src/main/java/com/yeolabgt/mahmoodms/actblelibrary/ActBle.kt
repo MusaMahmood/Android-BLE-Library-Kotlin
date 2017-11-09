@@ -21,18 +21,11 @@ import java.util.concurrent.Executors
  */
 
 class ActBle(private val mContext: Context, private val mBluetoothManager: BluetoothManager?,
-             private val mActBleListener: ActBleListener)//        actBleProcessQueue.run();
+             private val mActBleListener: ActBleListener)
 {
     private val bluetoothGattHashMap = HashMap<String, BluetoothGatt>()
 
     private val mBleGattCallback = object : BluetoothGattCallback() {
-//        override fun onPhyUpdate(gatt: BluetoothGatt, txPhy: Int, rxPhy: Int, status: Int) {
-//            super.onPhyUpdate(gatt, txPhy, rxPhy, status)
-//        }
-
-//        override fun onPhyRead(gatt: BluetoothGatt, txPhy: Int, rxPhy: Int, status: Int) {
-//            super.onPhyRead(gatt, txPhy, rxPhy, status)
-//        }
 
         override fun onConnectionStateChange(gatt: BluetoothGatt, status: Int, newState: Int) {
             mActBleListener.onConnectionStateChange(gatt, status, newState)
@@ -46,7 +39,7 @@ class ActBle(private val mContext: Context, private val mBluetoothManager: Bluet
             var remove = false
             var position = 0
             for (abc in ActBleProcessQueue.getActBleCharacteristicList()) {
-                if (characteristic.uuid == abc.bluetoothGattCharacteristic!!.uuid && abc.requestCode == ActBleProcessQueue.REQUEST_TYPE_READ_CHAR) {
+                if (characteristic.uuid.equals(abc.bluetoothGattCharacteristic!!.uuid) && abc.requestCode == ActBleProcessQueue.REQUEST_TYPE_READ_CHAR) {
                     remove = true
                     position = ActBleProcessQueue.getActBleCharacteristicList().indexOf(abc)
                 }
@@ -59,6 +52,25 @@ class ActBle(private val mContext: Context, private val mBluetoothManager: Bluet
         }
 
         override fun onCharacteristicWrite(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic, status: Int) {
+            Log.d(TAG, "onCharacteristicWrite: "+characteristic.uuid.toString())
+            var remove = false
+            var position = 0
+            for (abc in ActBleProcessQueue.getActBleCharacteristicList()) {
+                if (characteristic.uuid.equals(abc.bluetoothGattCharacteristic!!.uuid)
+                        && abc.requestCode == ActBleProcessQueue.REQUEST_TYPE_WRITE_CHAR) {
+                    remove = true
+                    position = ActBleProcessQueue.getActBleCharacteristicList().indexOf(abc)
+                }
+            }
+            if (remove) {
+                ActBleProcessQueue.removeCharacteristicRequest(position)
+                if (ActBleProcessQueue.actBleCharacteristicListSize>0 &&
+                        ActBleProcessQueue.getActBleCharacteristicList().get(0)
+                                .requestCode!=ActBleProcessQueue.REQUEST_TYPE_WRITE_CHAR)  {
+                    //If next characteristic request isn't a write, run the process:
+                    runProcess()
+                }
+            }
             mActBleListener.onCharacteristicWrite(gatt, characteristic, status)
         }
 
@@ -66,7 +78,8 @@ class ActBle(private val mContext: Context, private val mBluetoothManager: Bluet
             var remove = false
             var position = 0
             for (abc in ActBleProcessQueue.getActBleCharacteristicList()) {
-                if (characteristic.uuid == abc.bluetoothGattCharacteristic!!.uuid && abc.requestCode == ActBleProcessQueue.REQUEST_TYPE_WRITE_DESCRIPTOR) {
+                if (characteristic.uuid.equals(abc.bluetoothGattCharacteristic!!.uuid)
+                        && abc.requestCode == ActBleProcessQueue.REQUEST_TYPE_WRITE_DESCRIPTOR) {
                     remove = true
                     position = ActBleProcessQueue.getActBleCharacteristicList().indexOf(abc)
                 }
@@ -83,6 +96,20 @@ class ActBle(private val mContext: Context, private val mBluetoothManager: Bluet
         }
 
         override fun onDescriptorWrite(gatt: BluetoothGatt, descriptor: BluetoothGattDescriptor, status: Int) {
+            Log.d(TAG, "onDescriptorWrite: charUUID: "+descriptor.characteristic.uuid.toString())
+            var remove = false
+            var position = 0
+            for (abc in ActBleProcessQueue.getActBleCharacteristicList()) {
+                if (descriptor.characteristic.uuid.equals(abc.bluetoothGattCharacteristic!!.uuid)
+                        && abc.requestCode == ActBleProcessQueue.REQUEST_TYPE_WRITE_DESCRIPTOR) {
+                    remove = true
+                    position = ActBleProcessQueue.getActBleCharacteristicList().indexOf(abc)
+                }
+            }
+            if (remove) {
+                ActBleProcessQueue.removeCharacteristicRequest(position)
+                runProcess()
+            }
             mActBleListener.onDescriptorWrite(gatt, descriptor, status)
         }
 
@@ -98,7 +125,8 @@ class ActBle(private val mContext: Context, private val mBluetoothManager: Bluet
             val executorService = Executors.newSingleThreadExecutor()
             val operationSuccess = executorService.submit(ActBleProcessQueue.SequentialThread())
             try {
-                Log.d(TAG, "runProcess: operationSuccess:" + operationSuccess.get().toString())
+                Log.d(TAG, "runProcess: operationSuccess:"
+                        + operationSuccess.get().toString())
             } catch (e: InterruptedException) {
                 Log.e(TAG, "runProcess1: ", e)
             } catch (e: ExecutionException) {
@@ -117,6 +145,7 @@ class ActBle(private val mContext: Context, private val mBluetoothManager: Bluet
         characteristic.value = bytes
         val actBleCharacteristic = ActBleCharacteristic(ActBleProcessQueue.REQUEST_TYPE_WRITE_CHAR, gatt, characteristic)
         ActBleProcessQueue.addCharacteristicRequest(actBleCharacteristic)
+        runProcess()
     }
 
     fun setCharacteristicNotifications(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic, enableCharacteristic: Boolean) {

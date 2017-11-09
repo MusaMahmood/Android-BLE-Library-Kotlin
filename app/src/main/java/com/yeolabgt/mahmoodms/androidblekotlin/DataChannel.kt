@@ -85,7 +85,8 @@ internal class DataChannel(var chEnabled: Boolean, MSBFirst: Boolean, //Classifi
         }
 
         private fun unsignedToSigned24bit(unsigned: Int): Int {
-            return if (unsigned and 0x800000 != 0) -1 * (0x800000 - (unsigned and 0x800000 - 1)) else unsigned
+            return if (unsigned and 0x800000 != 0) -1 * (0x800000 - (unsigned and 0x800000 - 1))
+            else unsigned
         }
 
         private fun unsignedBytesToInt(b0: Byte, b1: Byte, MSBFirst: Boolean): Int {

@@ -290,7 +290,7 @@ class DeviceControlActivity : Activity(), ActBle.ActBleListener {
 
     @Throws(IOException::class)
     private fun terminateDataFileWriter() {
-        mPrimarySaveDataFile!!.terminateDataFileWriter()
+        mPrimarySaveDataFile?.terminateDataFileWriter()
     }
 
     public override fun onResume() {
@@ -424,7 +424,7 @@ class DeviceControlActivity : Activity(), ActBle.ActBleListener {
     }
 
     override fun onDestroy() {
-        mRedrawer!!.finish()
+        mRedrawer?.finish()
         disconnectAllBLE()
         try {
             terminateDataFileWriter()
@@ -823,6 +823,8 @@ class DeviceControlActivity : Activity(), ActBle.ActBleListener {
             }
         }
         if (mLedWheelchairControlService != null && mWheelchairControl) {
+            Log.e(TAG, "SendingCommand: "+command.toString())
+            Log.e(TAG, "SendingCommand (byte): "+bytes[0].toInt())
             mActBle!!.writeCharacteristic(mBluetoothGattArray[mWheelchairGattIndex]!!, mLedWheelchairControlService!!.getCharacteristic(AppConstant.CHAR_WHEELCHAIR_CONTROL), bytes)
         }
     }
