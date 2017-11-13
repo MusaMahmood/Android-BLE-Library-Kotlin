@@ -66,4 +66,8 @@ internal class XYPlotAdapter {
     fun setXyPlotDomainIncrement(domainIncrement: Double) {
         this.xyPlot!!.domainStepValue = domainIncrement
     }
+
+    fun setXyPlotVisibility(visible: Boolean) {
+        this.xyPlot!!.visibility = if (visible) View.VISIBLE else View.GONE
+    }
 }

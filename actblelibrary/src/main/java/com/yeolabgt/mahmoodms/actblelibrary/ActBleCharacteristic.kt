@@ -10,7 +10,7 @@ import android.bluetooth.BluetoothGattDescriptor
  */
 
 class ActBleCharacteristic {
-
+    // Variables:
     var bluetoothGatt: BluetoothGatt? = null
         private set
     var requestCode: Int = 0

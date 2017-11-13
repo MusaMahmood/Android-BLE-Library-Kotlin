@@ -10,13 +10,13 @@ import java.util.concurrent.Callable
  *
  */
 internal object ActBleProcessQueue {
+    // Immutable Values
     private val TAG = ActBleProcessQueue::class.java.simpleName
     val REQUEST_TYPE_READ_CHAR = 1
     val REQUEST_TYPE_WRITE_CHAR = 2
     val REQUEST_TYPE_READ_DESCRIPTOR = 3
     val REQUEST_TYPE_WRITE_DESCRIPTOR = 4
-    private val REQUEST_TYPE_NOTIFICATION_ON = 5
-    private val REQUEST_TYPE_NOTIFICATION_OFF = 6
+    // ArrayList is queue of commands to be executed
     private val actBleCharacteristicList = ArrayList<ActBleCharacteristic>()
 
     val actBleCharacteristicListSize: Int
@@ -24,49 +24,64 @@ internal object ActBleProcessQueue {
             actBleCharacteristicList.size
         } else 0
 
+    // Variables:
     var numberOfBluetoothGattCommunications = 0
 
+    /**
+     * Adds characteristic request to queue list
+     * @param actBleCharacteristic - ActBleCharacteristic that contains a single descriptor or
+     * characteristic read/write operation.
+     */
     fun addCharacteristicRequest(actBleCharacteristic: ActBleCharacteristic) {
         actBleCharacteristicList.add(actBleCharacteristic)
     }
 
-    private fun removeCharacteristicRequest(actBleCharacteristic: ActBleCharacteristic) {
-        actBleCharacteristicList.remove(actBleCharacteristic)
-    }
-
+    /**
+     * Removes characteristic request from queue list after executing
+     * @param index - index of ActBleCharacteristic that contains a single descriptor or
+     * characteristic read/write operation in the actBleCharacteristicList
+     */
     fun removeCharacteristicRequest(index: Int) {
         actBleCharacteristicList.removeAt(index)
     }
 
+    /**
+     * Retrieves actBleCharacteristicList, containing all the queued commands
+     * @return actBleCharacteristicList
+     */
     fun getActBleCharacteristicList(): List<ActBleCharacteristic> {
         return actBleCharacteristicList
     }
 
+    /**
+     * Executes request depending on the request code. Either a read/write of a characteristic or
+     * descriptor
+     * @param actBleCharacteristic - Queued request from list
+     * @return boolean value of operation success.
+     */
     private fun executeRequest(actBleCharacteristic: ActBleCharacteristic): Boolean {
-        val success: Boolean
         val bluetoothGatt = actBleCharacteristic.bluetoothGatt
         when (actBleCharacteristic.requestCode) {
-            REQUEST_TYPE_READ_CHAR -> success = bluetoothGatt!!.readCharacteristic(actBleCharacteristic.bluetoothGattCharacteristic)
-            REQUEST_TYPE_WRITE_CHAR -> {
-                success = bluetoothGatt!!.writeCharacteristic(actBleCharacteristic.bluetoothGattCharacteristic)
-            }
-            REQUEST_TYPE_READ_DESCRIPTOR -> success = bluetoothGatt!!.readDescriptor(actBleCharacteristic.bluetoothGattDescriptor)
-            REQUEST_TYPE_WRITE_DESCRIPTOR -> success = bluetoothGatt!!.writeDescriptor(actBleCharacteristic.bluetoothGattDescriptor)
-            REQUEST_TYPE_NOTIFICATION_ON -> success = bluetoothGatt!!.setCharacteristicNotification(actBleCharacteristic.bluetoothGattCharacteristic, true)
-            REQUEST_TYPE_NOTIFICATION_OFF -> {
-                success = bluetoothGatt!!.setCharacteristicNotification(actBleCharacteristic.bluetoothGattCharacteristic, false)
-                removeCharacteristicRequest(actBleCharacteristic)
-            }
-            else -> success = false
+            REQUEST_TYPE_READ_CHAR -> return bluetoothGatt!!.readCharacteristic(actBleCharacteristic.bluetoothGattCharacteristic)
+            REQUEST_TYPE_WRITE_CHAR -> return bluetoothGatt!!.writeCharacteristic(actBleCharacteristic.bluetoothGattCharacteristic)
+            REQUEST_TYPE_READ_DESCRIPTOR -> return bluetoothGatt!!.readDescriptor(actBleCharacteristic.bluetoothGattDescriptor)
+            REQUEST_TYPE_WRITE_DESCRIPTOR -> return bluetoothGatt!!.writeDescriptor(actBleCharacteristic.bluetoothGattDescriptor)
+            else -> return false
         }
-        return success
     }
 
+    /**
+     * Internal Callable function that sequentially executes commands on a single thread.
+     * Used for sequential Bluetooth Gatt connection/disconnection requests to ensure callback is
+     * received and connections are successful.
+     * No Input params
+     * @return Boolean: success of 'executeRequest' operation, or null if nothing is queued.
+     */
     internal class SequentialThread : Callable<Boolean> {
         @Throws(Exception::class)
         override fun call(): Boolean? {
-            if (!actBleCharacteristicList.isEmpty()) {
-                Log.e(TAG, "Executing Command#" + (++numberOfBluetoothGattCommunications).toString())
+            if (actBleCharacteristicList.isNotEmpty()) {
+                Log.e(TAG, "Executing Bluetooth LE Command#" + (++numberOfBluetoothGattCommunications).toString())
                 return executeRequest(actBleCharacteristicList[0])
             }
             return null

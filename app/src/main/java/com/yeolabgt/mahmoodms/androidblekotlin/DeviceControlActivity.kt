@@ -324,7 +324,7 @@ class DeviceControlActivity : Activity(), ActBle.ActBleListener {
             Toast.makeText(this, "No Devices Queued, Restart!", Toast.LENGTH_SHORT).show()
         }
         mActBle = ActBle(this, mBluetoothManager, this)
-        mBluetoothGattArray = Array(deviceMacAddresses!!.size, {i -> mActBle!!.connect(mBluetoothDeviceArray[i], false) })
+        mBluetoothGattArray = Array(deviceMacAddresses!!.size, {i -> mActBle!!.connect(mBluetoothDeviceArray[i]) })
         for (i in mBluetoothDeviceArray.indices) {
             Log.e(TAG, "Connecting to Device: " + (mBluetoothDeviceArray[i]!!.name + " " + mBluetoothDeviceArray[i]!!.address))
             if ("WheelchairControl" == mBluetoothDeviceArray[i]!!.name) {
@@ -529,6 +529,9 @@ class DeviceControlActivity : Activity(), ActBle.ActBleListener {
 
             mGraphAdapterCh1PSDA!!.plotData = showPSDA
             mGraphAdapterCh2PSDA!!.plotData = showPSDA
+            mFreqDomainPlotAdapter!!.setXyPlotVisibility(showPSDA)
+            mFreqDomainPlotAdapter!!.xyPlot?.redraw()
+            mTimeDomainPlotAdapter!!.xyPlot?.redraw()
             mChannelSelect!!.isChecked = chSel
             mGraphAdapterCh1!!.plotData = chSel
             mGraphAdapterCh2!!.plotData = !chSel
@@ -606,8 +609,8 @@ class DeviceControlActivity : Activity(), ActBle.ActBleListener {
     }
 
     private fun changeUIElementVisibility(visible: Boolean) {
+        val viewVisibility = if (visible) View.VISIBLE else View.INVISIBLE
         runOnUiThread {
-            val viewVisibility = if (visible) View.VISIBLE else View.INVISIBLE
             mSButton!!.visibility = viewVisibility
             mFButton!!.visibility = viewVisibility
             mLButton!!.visibility = viewVisibility
