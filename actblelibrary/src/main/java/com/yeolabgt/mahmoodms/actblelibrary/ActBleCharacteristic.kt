@@ -10,6 +10,7 @@ import android.bluetooth.BluetoothGattDescriptor
  */
 
 class ActBleCharacteristic {
+
     var bluetoothGatt: BluetoothGatt? = null
         private set
     var requestCode: Int = 0
@@ -18,6 +19,12 @@ class ActBleCharacteristic {
         private set
     var bluetoothGattDescriptor: BluetoothGattDescriptor? = null
 
+    /**
+     * Constructor for Bluetooth Gatt Characteristic Requests
+     * @param requestCode
+     * @param bluetoothGatt relevant Gatt
+     * @param bluetoothGattCharacteristic relevant characteristic that is being updated
+     */
     constructor(requestCode: Int, bluetoothGatt: BluetoothGatt,
                 bluetoothGattCharacteristic: BluetoothGattCharacteristic) {
         this.bluetoothGatt = bluetoothGatt
@@ -25,6 +32,13 @@ class ActBleCharacteristic {
         this.bluetoothGattCharacteristic = bluetoothGattCharacteristic
     }
 
+    /**
+     * Constructor for Bluetooth Gatt Descriptor Requests
+     * @param requestCode
+     * @param bluetoothGatt relevant Gatt
+     * @param bluetoothGattDescriptor of new descriptor
+     * @param bluetoothGattCharacteristic of which descriptor you are setting
+     */
     constructor(requestCode: Int, bluetoothGatt: BluetoothGatt,
                 bluetoothGattDescriptor: BluetoothGattDescriptor, bluetoothGattCharacteristic: BluetoothGattCharacteristic) {
         this.bluetoothGatt = bluetoothGatt

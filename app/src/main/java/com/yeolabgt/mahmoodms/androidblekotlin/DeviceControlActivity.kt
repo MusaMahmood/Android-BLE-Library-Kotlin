@@ -58,7 +58,6 @@ class DeviceControlActivity : Activity(), ActBle.ActBleListener {
     private var mBleInitializedBoolean = false
     private lateinit var mBluetoothGattArray: Array<BluetoothGatt?>
     private var mActBle: ActBle? = null
-//    private var mBluetoothLe: BluetoothLe? = null
     private var mDeviceName: String? = null
     private var mDeviceAddress: String? = null
     private var mConnected: Boolean = false
@@ -105,7 +104,7 @@ class DeviceControlActivity : Activity(), ActBle.ActBleListener {
     private val timeStamp: String
         get() = SimpleDateFormat("yyyy.MM.dd_HH.mm.ss", Locale.US).format(Date())
 
-    private val mClassifyTaskRunnableThread = Runnable {
+    private val mClassifyThread = Runnable {
         val y: DoubleArray
         if (mTFRunModel) {
             //Run TF Model: SEE ORIGINAL .py SCRIPT TO VERIFY CORRECT INPUTS!
@@ -680,7 +679,7 @@ class DeviceControlActivity : Activity(), ActBle.ActBleListener {
                 mPrimarySaveDataFile!!.writeToDisk(mCh1!!.characteristicDataPacketBytes, mCh2!!.characteristicDataPacketBytes)
             }
             if (mNumber2ChPackets % 10 == 0) { //Every x * 20 data points
-                val classifyTaskThread = Thread(mClassifyTaskRunnableThread)
+                val classifyTaskThread = Thread(mClassifyThread)
                 classifyTaskThread.start()
             }
             val powerSpectrumThreadTask = Thread(mPowerSpectrumRunnableThread)

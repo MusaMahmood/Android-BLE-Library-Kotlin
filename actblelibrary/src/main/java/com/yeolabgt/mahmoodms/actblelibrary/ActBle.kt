@@ -39,7 +39,8 @@ class ActBle(private val mContext: Context, private val mBluetoothManager: Bluet
             var remove = false
             var position = 0
             for (abc in ActBleProcessQueue.getActBleCharacteristicList()) {
-                if (characteristic.uuid.equals(abc.bluetoothGattCharacteristic!!.uuid) && abc.requestCode == ActBleProcessQueue.REQUEST_TYPE_READ_CHAR) {
+                if (characteristic.uuid == (abc.bluetoothGattCharacteristic!!.uuid)
+                        && abc.requestCode == ActBleProcessQueue.REQUEST_TYPE_READ_CHAR) {
                     remove = true
                     position = ActBleProcessQueue.getActBleCharacteristicList().indexOf(abc)
                 }
@@ -56,7 +57,7 @@ class ActBle(private val mContext: Context, private val mBluetoothManager: Bluet
             var remove = false
             var position = 0
             for (abc in ActBleProcessQueue.getActBleCharacteristicList()) {
-                if (characteristic.uuid.equals(abc.bluetoothGattCharacteristic!!.uuid)
+                if (characteristic.uuid == (abc.bluetoothGattCharacteristic!!.uuid)
                         && abc.requestCode == ActBleProcessQueue.REQUEST_TYPE_WRITE_CHAR) {
                     remove = true
                     position = ActBleProcessQueue.getActBleCharacteristicList().indexOf(abc)
@@ -65,7 +66,7 @@ class ActBle(private val mContext: Context, private val mBluetoothManager: Bluet
             if (remove) {
                 ActBleProcessQueue.removeCharacteristicRequest(position)
                 if (ActBleProcessQueue.actBleCharacteristicListSize>0 &&
-                        ActBleProcessQueue.getActBleCharacteristicList().get(0)
+                        ActBleProcessQueue.getActBleCharacteristicList()[0]
                                 .requestCode!=ActBleProcessQueue.REQUEST_TYPE_WRITE_CHAR)  {
                     //If next characteristic request isn't a write, run the process:
                     runProcess()
@@ -78,7 +79,7 @@ class ActBle(private val mContext: Context, private val mBluetoothManager: Bluet
             var remove = false
             var position = 0
             for (abc in ActBleProcessQueue.getActBleCharacteristicList()) {
-                if (characteristic.uuid.equals(abc.bluetoothGattCharacteristic!!.uuid)
+                if (characteristic.uuid == (abc.bluetoothGattCharacteristic!!.uuid)
                         && abc.requestCode == ActBleProcessQueue.REQUEST_TYPE_WRITE_DESCRIPTOR) {
                     remove = true
                     position = ActBleProcessQueue.getActBleCharacteristicList().indexOf(abc)
@@ -100,7 +101,7 @@ class ActBle(private val mContext: Context, private val mBluetoothManager: Bluet
             var remove = false
             var position = 0
             for (abc in ActBleProcessQueue.getActBleCharacteristicList()) {
-                if (descriptor.characteristic.uuid.equals(abc.bluetoothGattCharacteristic!!.uuid)
+                if (descriptor.characteristic.uuid == (abc.bluetoothGattCharacteristic!!.uuid)
                         && abc.requestCode == ActBleProcessQueue.REQUEST_TYPE_WRITE_DESCRIPTOR) {
                     remove = true
                     position = ActBleProcessQueue.getActBleCharacteristicList().indexOf(abc)
@@ -183,7 +184,7 @@ class ActBle(private val mContext: Context, private val mBluetoothManager: Bluet
         if (gatt != null) {
             Log.d(TAG, "Found Device in Hashmap: " + device.address
                     + " :: Attempting to Disconnect")
-            //If already in Hashmap, disconnect before attempting to reconnect
+            //If already in hashmap, disconnect before attempting to reconnect
             gatt.disconnect()
             gatt.close()
         }

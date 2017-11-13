@@ -17,7 +17,6 @@ internal object ActBleProcessQueue {
     val REQUEST_TYPE_WRITE_DESCRIPTOR = 4
     private val REQUEST_TYPE_NOTIFICATION_ON = 5
     private val REQUEST_TYPE_NOTIFICATION_OFF = 6
-
     private val actBleCharacteristicList = ArrayList<ActBleCharacteristic>()
 
     val actBleCharacteristicListSize: Int
@@ -50,7 +49,6 @@ internal object ActBleProcessQueue {
             REQUEST_TYPE_READ_CHAR -> success = bluetoothGatt!!.readCharacteristic(actBleCharacteristic.bluetoothGattCharacteristic)
             REQUEST_TYPE_WRITE_CHAR -> {
                 success = bluetoothGatt!!.writeCharacteristic(actBleCharacteristic.bluetoothGattCharacteristic)
-//                removeCharacteristicRequest(actBleCharacteristic)
             }
             REQUEST_TYPE_READ_DESCRIPTOR -> success = bluetoothGatt!!.readDescriptor(actBleCharacteristic.bluetoothGattDescriptor)
             REQUEST_TYPE_WRITE_DESCRIPTOR -> success = bluetoothGatt!!.writeDescriptor(actBleCharacteristic.bluetoothGattDescriptor)

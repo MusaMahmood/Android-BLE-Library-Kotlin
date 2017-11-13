@@ -111,9 +111,11 @@ class MainActivity : Activity() {
                     scannedDeviceAdapter!!.notifyDataSetChanged()
                     selectedDeviceAdapter!!.add(item)
                     selectedDeviceAdapter!!.notifyDataSetChanged()
-                    Toast.makeText(this@MainActivity, "Device Selected: " + item.displayName + "\n" + item.deviceMac, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@MainActivity, "Device Selected: "
+                            + item.displayName + "\n" + item.deviceMac, Toast.LENGTH_SHORT).show()
                 } else {
-                    Toast.makeText(this@MainActivity, "Device Already in List!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@MainActivity, "Device Already in List!",
+                            Toast.LENGTH_SHORT).show()
                 }
             }
         }
@@ -144,16 +146,9 @@ class MainActivity : Activity() {
     }
 
     private fun checkPermissions(): Boolean {
-        val permissionCheck = intArrayOf(ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION), ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE), ContextCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS), ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE))
-        val listPermissionsNeeded = ArrayList<String>()
-        for (i in permissionCheck.indices) {
-            if (permissionCheck[i] != PackageManager.PERMISSION_GRANTED) {
-                listPermissionsNeeded.add(PERMISSIONS_LIST[i])
-            }
-        }
-        Log.e(TAG, "Permissions List Size: " + listPermissionsNeeded.size.toString())
-        if (!listPermissionsNeeded.isEmpty()) {
-            ActivityCompat.requestPermissions(this, listPermissionsNeeded.toTypedArray(), MULTIPLE_PERMISSIONS_REQUEST)
+        val deniedPermissions = PERMISSIONS_LIST.filter { ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED }
+        if (deniedPermissions.isNotEmpty()) {
+            ActivityCompat.requestPermissions(this, deniedPermissions.toTypedArray(), MULTIPLE_PERMISSIONS_REQUEST)
             return false
         }
         return true
@@ -176,7 +171,7 @@ class MainActivity : Activity() {
         super.onResume()
         /*
          * Ensures Bluetooth is enabled on the device - if not enabled - fire intent to display a
-         * dialog to ask permissioo enable
+         * dialog to ask permission enable
          */
         if (checkPermissions()) {
             if (!mBluetoothAdapter!!.isEnabled) {
